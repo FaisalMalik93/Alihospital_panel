@@ -10,7 +10,7 @@ export async function GET() {
       },
     })
     return NextResponse.json(payments)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching doctor payments:', error)
     return NextResponse.json(
       { error: 'Failed to fetch payments', details: error instanceof Error ? error.message : 'Unknown error' },
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(payment, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating doctor payment:', error)
     return NextResponse.json(
       { error: 'Failed to create payment', details: error instanceof Error ? error.message : 'Unknown error' },

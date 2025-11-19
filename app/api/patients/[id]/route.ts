@@ -26,7 +26,7 @@ export async function GET(
     }
 
     return NextResponse.json(patient)
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to fetch patient' },
       { status: 500 }
@@ -56,7 +56,7 @@ export async function PUT(
     })
 
     return NextResponse.json(patient)
-  } catch (error) {
+  } catch (error: any) {
     if (error.code === 'P2025') {
       return NextResponse.json(
         { error: 'Patient not found' },
@@ -80,7 +80,7 @@ export async function DELETE(
     })
 
     return NextResponse.json({ message: 'Patient deleted successfully' })
-  } catch (error) {
+  } catch (error: any) {
     if (error.code === 'P2025') {
       return NextResponse.json(
         { error: 'Patient not found' },

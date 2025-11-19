@@ -21,7 +21,7 @@ export async function GET() {
       },
     })
     return NextResponse.json(patients)
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to fetch patients' },
       { status: 500 }
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(patient, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to create patient' },
       { status: 500 }

@@ -15,7 +15,7 @@ export async function GET() {
       },
     })
     return NextResponse.json(reports)
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to fetch reports' },
       { status: 500 }
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(report, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to create report' },
       { status: 500 }

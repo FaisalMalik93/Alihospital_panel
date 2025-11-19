@@ -10,7 +10,7 @@ export async function GET() {
       },
     })
     return NextResponse.json(bills)
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to fetch bills' },
       { status: 500 }
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(bill, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to create bill' },
       { status: 500 }

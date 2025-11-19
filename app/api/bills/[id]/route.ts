@@ -21,7 +21,7 @@ export async function GET(
     }
 
     return NextResponse.json(bill)
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to fetch bill' },
       { status: 500 }

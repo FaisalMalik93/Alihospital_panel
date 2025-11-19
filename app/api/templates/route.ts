@@ -10,7 +10,7 @@ export async function GET() {
       },
     })
     return NextResponse.json(templates)
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to fetch templates' },
       { status: 500 }
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(template, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(
       { error: 'Failed to create template' },
       { status: 500 }
