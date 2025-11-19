@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" fill="none">
+  <!-- Background -->
+  <rect width="300" height="100" fill="white"/>
+
+  <!-- Medical Cross Circle -->
+  <circle cx="50" cy="50" r="35" fill="#16a34a"/>
+
+  <!-- White Medical Cross -->
+  <rect x="44" y="30" width="12" height="40" fill="white" rx="2"/>
+  <rect x="30" y="44" width="40" height="12" fill="white" rx="2"/>
+
+  <!-- Hospital Text -->
+  <text x="95" y="45" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#16a34a">ALI</text>
+  <text x="95" y="72" font-family="Arial, sans-serif" font-size="24" font-weight="600" fill="#15803d">HOSPITAL</text>
+
+  <!-- Tagline -->
+  <text x="95" y="88" font-family="Arial, sans-serif" font-size="10" fill="#6b7280">Quality Healthcare for All</text>
+</svg>

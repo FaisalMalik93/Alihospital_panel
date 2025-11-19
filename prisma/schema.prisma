@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Doctor {
+  id              String            @id @default(cuid())
+  name            String
+  specialization  String
+  phone           String
+  email           String            @unique
+  qualifications  String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  reportTemplates ReportTemplate[]
+  payments        DoctorPayment[]
+
+  @@map("doctors")
+}
+
+model Patient {
+  id             String    @id @default(cuid())
+  patientId      String    @unique
+  mrId           String?
+  name           String
+  age            Int
+  gender         String
+  contact        String
+  address        String
+  medicalHistory String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  reports        Report[]
+  bills          Bill[]
+
+  @@map("patients")
+}
+
+model ReportTemplate {
+  id              String    @id @default(cuid())
+  name            String
+  contentTemplate String    
+  doctorId        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  doctor          Doctor?   @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  reports         Report[]
+
+  @@map("report_templates")
+}
+
+model Report {
+  id          String          @id @default(cuid())
+  patientId   String
+  templateId  String
+  content     String          
+  generatedAt DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  patient     Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  template    ReportTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+model Bill {
+  id        String    @id @default(cuid())
+  patientId String
+  services  String    
+  amount    Float
+  status    String    @default("unpaid")
+  date      DateTime  @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("bills")
+}
+
+model DoctorPayment {
+  id        String    @id @default(cuid())
+  doctorId  String
+  amount    Float
+  date      DateTime  @default(now())
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  doctor    Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@map("doctor_payments")
+}
