@@ -32,7 +32,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, age, gender, contact, address, medicalHistory, mrId } = body
+    const { name, age, gender, contact, address, medicalHistory, mrId, doctorName, department } = body
 
     if (!name || !age || !gender || !contact || !address) {
       return NextResponse.json(
@@ -53,11 +53,20 @@ export async function POST(request: NextRequest) {
         contact,
         address,
         medicalHistory: medicalHistory || '',
+        doctorName: doctorName || null,
+        department: department || null,
       },
     })
 
     return NextResponse.json(patient, { status: 201 })
   } catch (error: any) {
+    // Handle unique constraint violation for MR ID
+    if (error.code === 'P2002' && error.meta?.target?.includes('mrId')) {
+      return NextResponse.json(
+        { error: 'MR ID already exists. Please use a different MR ID.' },
+        { status: 409 }
+      )
+    }
     return NextResponse.json(
       { error: 'Failed to create patient' },
       { status: 500 }

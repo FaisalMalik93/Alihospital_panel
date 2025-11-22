@@ -28,6 +28,7 @@ export default function BillsPage() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [editingBill, setEditingBill] = useState<Bill | null>(null)
   const [printingBill, setPrintingBill] = useState<Bill | null>(null)
   const printRef = useRef<HTMLDivElement>(null)
   const [formData, setFormData] = useState({
@@ -36,6 +37,9 @@ export default function BillsPage() {
     amount: '',
     status: 'unpaid',
   })
+  const [filterPatientName, setFilterPatientName] = useState('')
+  const [filterPatientId, setFilterPatientId] = useState('')
+  const [filterDate, setFilterDate] = useState('')
 
   useEffect(() => {
     fetchBills()
@@ -68,8 +72,11 @@ export default function BillsPage() {
     e.preventDefault()
 
     try {
-      const res = await fetch('/api/bills', {
-        method: 'POST',
+      const url = editingBill ? `/api/bills/${editingBill.id}` : '/api/bills'
+      const method = editingBill ? 'PUT' : 'POST'
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
@@ -77,18 +84,29 @@ export default function BillsPage() {
       if (res.ok) {
         fetchBills()
         resetForm()
-        alert('Bill created successfully!')
+        alert(editingBill ? 'Bill updated successfully!' : 'Bill created successfully!')
       } else {
         const error = await res.json()
-        alert(error.error || 'Failed to create bill')
+        alert(error.error || `Failed to ${editingBill ? 'update' : 'create'} bill`)
       }
     } catch (error) {
-      console.error('Error creating bill:', error)
-      alert('Failed to create bill')
+      console.error(`Error ${editingBill ? 'updating' : 'creating'} bill:`, error)
+      alert(`Failed to ${editingBill ? 'update' : 'create'} bill`)
     }
   }
 
-  const handleStatusUpdate = async (billId: string, newStatus: string) => {
+  const handleEdit = (bill: Bill) => {
+    setEditingBill(bill)
+    setFormData({
+      patientId: bill.patient.id,
+      services: bill.services,
+      amount: bill.amount.toString(),
+      status: bill.status,
+    })
+    setShowForm(true)
+  }
+
+    const handleStatusUpdate = async (billId: string, newStatus: string) => {
     try {
       const bill = bills.find((b) => b.id === billId)
       if (!bill) return
@@ -142,6 +160,13 @@ export default function BillsPage() {
       status: 'unpaid',
     })
     setShowForm(false)
+    setEditingBill(null)
+  }
+
+  const handleClearFilters = () => {
+    setFilterPatientName('')
+    setFilterPatientId('')
+    setFilterDate('')
   }
 
   const handlePrintInvoice = (bill: Bill) => {
@@ -234,6 +259,20 @@ export default function BillsPage() {
     doc.save(`Invoice_${bill.patient.patientId}_${formatPDFDatePKT(new Date())}.pdf`)
   }
 
+  // Filter bills based on filter criteria
+  const filteredBills = bills.filter((bill) => {
+    const matchesName = filterPatientName === '' ||
+      bill.patient.name.toLowerCase().includes(filterPatientName.toLowerCase())
+
+    const matchesPatientId = filterPatientId === '' ||
+      bill.patient.patientId.toLowerCase().includes(filterPatientId.toLowerCase())
+
+    const matchesDate = filterDate === '' ||
+      formatDatePKT(bill.createdAt) === formatDatePKT(filterDate)
+
+    return matchesName && matchesPatientId && matchesDate
+  })
+
   const totalUnpaid = bills
     .filter((b) => b.status === 'unpaid')
     .reduce((sum, b) => sum + b.amount, 0)
@@ -269,28 +308,40 @@ export default function BillsPage() {
 
         {showForm && (
           <div className="card">
-            <h2 className="text-xl font-semibold mb-4">Create New Bill</h2>
+            <h2 className="text-xl font-semibold mb-4">{editingBill ? 'Edit Bill' : 'Create New Bill'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Select Patient *
-                </label>
-                <select
-                  required
-                  className="input-field"
-                  value={formData.patientId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, patientId: e.target.value })
-                  }
-                >
-                  <option value="">Choose a patient...</option>
-                  {patients.map((patient) => (
-                    <option key={patient.id} value={patient.id}>
-                      {patient.patientId} - {patient.name} - {patient.contact}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {editingBill ? (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Patient (Read-only)
+                  </label>
+                  <div className="text-sm text-gray-900">
+                    <div className="font-medium">{editingBill.patient.name}</div>
+                    <div className="text-gray-600">{editingBill.patient.patientId} - {editingBill.patient.contact}</div>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Patient *
+                  </label>
+                  <select
+                    required
+                    className="input-field"
+                    value={formData.patientId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, patientId: e.target.value })
+                    }
+                  >
+                    <option value="">Choose a patient...</option>
+                    {patients.map((patient) => (
+                      <option key={patient.id} value={patient.id}>
+                        {patient.patientId} - {patient.name} - {patient.contact}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Services/Items *
@@ -344,7 +395,7 @@ export default function BillsPage() {
               </div>
               <div className="flex space-x-3">
                 <button type="submit" className="btn-primary">
-                  Create Bill
+                  {editingBill ? 'Update Bill' : 'Create Bill'}
                 </button>
                 <button type="button" onClick={resetForm} className="btn-secondary">
                   Cancel
@@ -356,10 +407,66 @@ export default function BillsPage() {
 
         <div className="card">
           <h2 className="text-xl font-semibold mb-4">Bills List</h2>
+
+          {/* Filters Section */}
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">Filter Bills</h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Patient Name
+                </label>
+                <input
+                  type="text"
+                  className="input-field text-sm"
+                  placeholder="Search by name..."
+                  value={filterPatientName}
+                  onChange={(e) => setFilterPatientName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Patient ID
+                </label>
+                <input
+                  type="text"
+                  className="input-field text-sm"
+                  placeholder="Search by ID..."
+                  value={filterPatientId}
+                  onChange={(e) => setFilterPatientId(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  className="input-field text-sm"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={handleClearFilters}
+                  className="btn-secondary w-full text-sm"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+            <div className="mt-3 text-sm text-gray-600">
+              Showing {filteredBills.length} of {bills.length} bills
+            </div>
+          </div>
+
           {isLoading ? (
             <p className="text-gray-600">Loading...</p>
           ) : bills.length === 0 ? (
             <p className="text-gray-600">No bills found. Create one to get started!</p>
+          ) : filteredBills.length === 0 ? (
+            <p className="text-gray-600">No bills match the selected filters.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -386,7 +493,7 @@ export default function BillsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {bills.map((bill) => (
+                  {filteredBills.map((bill) => (
                     <tr key={bill.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{formatDatePKT(bill.createdAt)}</div>
@@ -425,6 +532,12 @@ export default function BillsPage() {
                         </select>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <button
+                          onClick={() => handleEdit(bill)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          Edit
+                        </button>
                         <button
                           onClick={() => handlePrintInvoice(bill)}
                           className="text-primary-600 hover:text-primary-900"

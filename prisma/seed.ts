@@ -1,9 +1,46 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
   console.log('🌱 Seeding database with dummy data...\n')
+
+  // Create Users (for authentication)
+  console.log('👤 Creating users...')
+  const adminPassword = await bcrypt.hash('admin123', 10)
+  const userPassword = await bcrypt.hash('user123', 10)
+
+  const users = await Promise.all([
+    prisma.user.upsert({
+      where: { username: 'admin' },
+      update: {},
+      create: {
+        username: 'admin',
+        password: adminPassword,
+        role: 'Admin',
+      },
+    }),
+    prisma.user.upsert({
+      where: { username: 'user1' },
+      update: {},
+      create: {
+        username: 'user1',
+        password: userPassword,
+        role: 'User1',
+      },
+    }),
+    prisma.user.upsert({
+      where: { username: 'user2' },
+      update: {},
+      create: {
+        username: 'user2',
+        password: userPassword,
+        role: 'User2',
+      },
+    }),
+  ])
+  console.log(`✓ Created ${users.length} users\n`)
 
   // Create Doctors
   console.log('👨‍⚕️ Creating doctors...')
@@ -462,6 +499,7 @@ Lab Technician Signature: [Signed]`,
 
   console.log('✅ Database seeded successfully!')
   console.log(`\n📊 Summary:`)
+  console.log(`   - ${users.length} Users`)
   console.log(`   - ${doctors.length} Doctors`)
   console.log(`   - ${templates.length} Report Templates`)
   console.log(`   - ${patients.length} Patients`)

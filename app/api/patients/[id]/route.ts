@@ -40,7 +40,7 @@ export async function PUT(
 ) {
   try {
     const body = await request.json()
-    const { name, age, gender, contact, address, medicalHistory, mrId } = body
+    const { name, age, gender, contact, address, medicalHistory, mrId, doctorName, department } = body
 
     const patient = await prisma.patient.update({
       where: { id: params.id },
@@ -52,6 +52,8 @@ export async function PUT(
         address,
         medicalHistory,
         mrId: mrId || null,
+        doctorName: doctorName || null,
+        department: department || null,
       },
     })
 

@@ -331,14 +331,14 @@ export default function ReportsPage() {
       {/* Print view */}
       {previewReport && (
         <div className="hidden print:block">
-          <div className="p-12" ref={printRef}>
-            <div className="text-center mb-8">
+          <div className="p-6" ref={printRef}>
+            <div className="text-center mb-4">
               <div className="flex justify-center mb-4">
                 <Image
                   src="/logo.jpg"
                   alt="Ali Hospital Logo"
-                  width={100}
-                  height={100}
+                  width={80}
+                  height={80}
                   className="object-contain"
                 />
               </div>

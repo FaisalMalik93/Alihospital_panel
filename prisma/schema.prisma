@@ -29,13 +29,15 @@ model Doctor {
 model Patient {
   id             String    @id @default(cuid())
   patientId      String    @unique
-  mrId           String?
+  mrId           String?   @unique
   name           String
   age            Int
   gender         String
   contact        String
   address        String
   medicalHistory String?
+  doctorName     String?
+  department     String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -100,4 +102,15 @@ model DoctorPayment {
   doctor    Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
   @@map("doctor_payments")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  username  String    @unique
+  password  String
+  role      String    @default("User1")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("users")
 }
